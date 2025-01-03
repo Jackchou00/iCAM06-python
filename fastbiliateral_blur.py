@@ -97,8 +97,8 @@ def bilateral_filter(img):
     else:
         z = 4
     _, xDim, _ = img.shape
-    sigmaSpace = 2 * xDim / z / 100
-    # sigmaSpace = 10
+    # sigmaSpace = 2 * xDim / z / 100
+    sigmaSpace = 10
     base_layer = cv2.bilateralFilter(logimg, d=-1, sigmaColor=sigmaColor, sigmaSpace=sigmaSpace)
     
     detail_layer = logimg - base_layer

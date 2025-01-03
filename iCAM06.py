@@ -11,6 +11,7 @@ def changeColorSpace(inImage, colorMatrix):
 
 
 def iCAM06_CAT(XYZimg, white):
+    # transform the XYZ to RGB (sensor) space
     M = np.array(
         [[0.7328, -0.7036, 0.0030], [0.4296, 1.6974, 0.0136], [-0.1624, 0.0061, 0.9834]]
     )
@@ -22,7 +23,7 @@ def iCAM06_CAT(XYZimg, white):
 
     La = 0.2 * white[..., 1]
     F = 1.0
-    D = ne.evaluate("0.3 * F * (1 - (1 / 3.6) * exp(-(La - 42) / 92))")
+    D = ne.evaluate("0.3 * F * (1 - (1 / 3.6) * exp(-(La - 42) / 92))") ## 似乎应该是 exp(-(La + 42) / 92)
 
     RGB_white = RGB_white + 1e-7
     Rc = (D * RGB_d65[0] / RGB_white[..., 0] + 1 - D) * RGB_img[..., 0]
@@ -76,7 +77,7 @@ def iCAM06_TC(XYZ_adapt, white_img, p):
     # 计算 Bs
     Las_rep = Las[:, :, np.newaxis]  # 使用广播
     ratio2 = ne.evaluate("(5 * Las_rep / 2.26) * (S / Sw)")
-    term1 = ne.evaluate("0.5 / (1 + 0.3 * ratio2 ** 3)")
+    term1 = ne.evaluate("0.5 / (1 + 0.3 * ratio2 ** 3)")  # 似乎应该是 ** 0.3
     term2 = ne.evaluate("0.5 / (1 + 5 * (5 * Las_rep / 2.26))")
     Bs = term1 + term2
 
@@ -85,7 +86,7 @@ def iCAM06_TC(XYZ_adapt, white_img, p):
     ratio3 = ne.evaluate("FLS_rep * (S / Sw)")
     term3 = ne.evaluate("400 * ratio3 ** p")
     term4 = ne.evaluate("27.13 + ratio3 ** p")
-    As = ne.evaluate("3.05 * Bs * (term3 / term4) + 0.03")
+    As = ne.evaluate("3.05 * Bs * (term3 / term4) + 0.03") # 似乎应该是 + 0.3
 
     # combine Cone and Rod response
     RGB_c = RGB_c + As
