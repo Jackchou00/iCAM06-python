@@ -1,33 +1,22 @@
 import numpy as np
 import numexpr as ne
-from fastbiliateral_blur import bilateral_filter, blur
-from iCAM06 import iCAM06_CAT, iCAM06_TC, iCAM06_IPT
-from CAT02 import img_CAT02_to_D65
-from TC import img_TC
-from IPT import IPT
+from spatial_process.fastbiliateral_blur import bilateral_filter, blur
+
+# from iCAM06 import iCAM06_CAT, iCAM06_TC, iCAM06_IPT
+from chromatic_adaptation.CAT02 import img_CAT02_to_D65
+from colour_space_conversion import XYZ_to_sRGB
+from tone_compression.TC import img_TC
+from colour_space_conversion.IPT import IPT
 import cv2
-
-
-def XYZ_to_sRGB(XYZ):
-    XYZ = np.clip(XYZ / 100, 0, 1)
-    M = np.array(
-        [
-            [3.2406, -1.5372, -0.4986],
-            [-0.9689, 1.8758, 0.0415],
-            [0.0557, -0.2040, 1.0570],
-        ]
-    )
-    RGB = np.dot(XYZ, M.T)
-    RGB = np.clip(RGB, 0, 1)
-    RGB = np.where(RGB <= 0.0031308, 12.92 * RGB, 1.055 * RGB ** (1 / 2.4) - 0.055)
-    return RGB
 
 
 def LocalContrast(detail, base):
     La = 0.2 * base[:, :, 1]
     k = 1.0 / (5 * La + 1)
     # FL = 0.2 * k ** 4 * (5 * La) + 0.1 * (1 - k ** 4) ** 2 * (5 * La) ** (1 / 3)
-    FL = ne.evaluate("0.2 * k ** 4 * (5 * La) + 0.1 * (1 - k ** 4) ** 2 * (5 * La) ** (1 / 3)")
+    FL = ne.evaluate(
+        "0.2 * k ** 4 * (5 * La) + 0.1 * (1 - k ** 4) ** 2 * (5 * La) ** (1 / 3)"
+    )
     FL_rep = np.stack([FL, FL, FL], axis=2)
     detail_a = ne.evaluate("detail ** ((FL_rep + 0.8) ** 0.25)")
     return detail_a
@@ -36,7 +25,7 @@ def LocalContrast(detail, base):
 def main():
     # read mat
     # Input of the iCAM06 model: XYZ, absolute color space
-    XYZ = np.load('xyz.npy').astype(np.float32)
+    XYZ = np.load("example/xyz.npy").astype(np.float32)
 
     # Image decomposition
     base_layer, detail_layer = bilateral_filter(XYZ)
@@ -59,20 +48,21 @@ def main():
     XYZ_p = IPT(XYZ_d)
 
     # Convert XYZ to RGB
-    
+
     RGB_p = XYZ_to_sRGB(XYZ_p)
-    '''
+    """
     # Display the image
     
     plt.imshow(RGB_p)
     plt.show()
-    '''
+    """
     # Convert RGB from RGB to BGR for OpenCV
-    
+
     RGB_p_bgr = cv2.cvtColor((RGB_p * 255).astype(np.uint8), cv2.COLOR_RGB2BGR)
     # Save the image
-    cv2.imwrite('output.jpg', RGB_p_bgr)
-    
-    
+    cv2.imwrite("example/output.jpg", RGB_p_bgr)
+    print("Image saved as example/output.jpg")
+
+
 if __name__ == "__main__":
     main()
