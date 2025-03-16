@@ -20,10 +20,9 @@ iCAM 是 Fairchild 等人提出的一种框架，将色貌模型应用于图像�
 
 目前，正在改进项目整体的文件结构，以实现模块化和更好的可读性。
 
-现有的文件是面向过程的，包括：
+已按照 iCAM 的结构，将仓库分为以下部分：
 
-- `iCAM06.py`: iCAM06算法的主要实现。
-- `main.py`: 使用iCAM06算法的示例。
-- `fastbiliateral_blur.py`: 双边滤波器和高斯模糊的快速实现。
-- `xyz.npy`: 来自Fairchild原始代码的XYZ示例数据。（重采样为1/4大小）
-- `output.jpg`: 示例代码的输出。
+- `chromatic_adaptation`：色适应
+- `colour_space_conversion`：色彩空间转换
+- `spatial_process`：空域处理
+- `tone_compression`：色调压缩
