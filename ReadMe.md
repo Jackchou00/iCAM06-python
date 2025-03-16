@@ -20,10 +20,9 @@ This project provides a Python implementation of the iCAM framework, based on th
 
 The project is currently undergoing structural improvements to enhance modularization and readability, aiming for a more organized and maintainable codebase.
 
-The existing code is process-oriented, including:
+I have divided the repository into the following sections, following the structure of iCAM:
 
-- `iCAM06.py`: The main implementation of the iCAM06 algorithm.
-- `main.py`: An example of how to use the iCAM06 algorithm.
-- `fastbiliateral_blur.py`: A fast implementation of the bilateral filter and Gaussian blur.
-- `xyz.npy`: XYZ example data from Fairchild's original code. (resampled to 1/4 size)
-- `output.jpg`: The output of the example code.
+- `chromatic_adaptation`: Chromatic adaptation transforms
+- `colour_space_conversion`: Color space conversions (e.g., from XYZ to sRGB)
+- `spatial_process`: Spatial processing operations
+- `tone_compression`: Tone compression algorithms
