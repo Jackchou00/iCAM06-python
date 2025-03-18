@@ -1,7 +1,7 @@
 import numpy as np
 
 
-M_H_D65 = np.array(
+M_XYZ_to_LMS = np.array(
     [
         [0.4002, 0.7075, -0.0807],
         [-0.2280, 1.1500, 0.0612],
@@ -9,7 +9,7 @@ M_H_D65 = np.array(
     ]
 )
 
-M_IPT = np.array(
+M_LMS_prime_to_IPT = np.array(
     [
         [0.4000, 0.4000, 0.2000],
         [4.4550, -4.8510, 0.3960],
@@ -17,34 +17,52 @@ M_IPT = np.array(
     ]
 )
 
-def IPT(XYZ):
+M_LMS_to_XYZ = np.linalg.inv(M_XYZ_to_LMS)
+M_IPT_to_LMS_prime = np.linalg.inv(M_LMS_prime_to_IPT)
+
+
+def XYZ_to_IPT(XYZ):
+    """
+    Convert XYZ color space to IPT color space.
+
+    Parameters:
+    XYZ : array-like
+        Input array of XYZ color values. shape should be (..., 3)
+
+    Returns:
+    IPT : array-like
+        Output array of IPT color values. shape will be the same as input XYZ
+    """
+
     XYZ_reshape = XYZ.reshape((-1, 3))
-    LMS = XYZ_reshape @ M_H_D65.T
-    
-    LMS_nonlinear = np.sign(LMS) * np.abs(LMS) ** 0.43
-    
-    IPT = LMS_nonlinear @ M_IPT.T
+    LMS = XYZ_reshape @ M_XYZ_to_LMS.T
+
+    LMS_prime = np.sign(LMS) * np.abs(LMS) ** 0.43
+
+    IPT = LMS_prime @ M_LMS_prime_to_IPT.T
     IPT = IPT.reshape(XYZ.shape)
-    
-    L_A = 0.2 * XYZ[..., 1]
-    k = 1.0 / (5 * L_A + 1)
-    F_L = 0.2 * k ** 4 * (5 * L_A) + 0.1 * (1 - k ** 4) ** 2 * (5 * L_A) ** (1 / 3)
-    
-    C = np.sqrt(IPT[..., 1] ** 2 + IPT[..., 2] ** 2)
-    
-    adjustment = (F_L + 1) ** 0.2 * ((1.29 * C ** 2 - 0.27 * C + 0.42) / (C ** 2 - 0.31 * C + 0.42))
-    
-    IPT[..., 1] = IPT[..., 1] * adjustment
-    IPT[..., 2] = IPT[..., 2] * adjustment
-    
-    # IPT[..., 0] = IPT[..., 0] ** 1.0
-    
+
+    return IPT
+
+
+def IPT_to_XYZ(IPT):
+    """
+    Convert IPT color space to XYZ color space.
+
+    Parameters:
+    IPT : array-like
+        Input array of IPT color values. shape should be (..., 3)
+
+    Returns:
+    XYZ : array-like
+        Output array of XYZ color values. shape will be the same as input IPT
+    """
+
     IPT_reshape = IPT.reshape((-1, 3))
-    LMS_nonlinear = IPT_reshape @ np.linalg.inv(M_IPT).T
-    LMS = np.sign(LMS_nonlinear) * np.abs(LMS_nonlinear) ** (1 / 0.43)
-    XYZ_reshape = LMS @ np.linalg.inv(M_H_D65).T
-    XYZ = XYZ_reshape.reshape(XYZ.shape)
-    
+    LMS_prime = IPT_reshape @ M_IPT_to_LMS_prime.T
+
+    LMS = np.sign(LMS_prime) * np.abs(LMS_prime) ** (1 / 0.43)
+    XYZ = LMS @ M_LMS_to_XYZ.T
+    XYZ = XYZ.reshape(IPT.shape)
+
     return XYZ
-    
-    
