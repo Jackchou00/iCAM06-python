@@ -16,6 +16,19 @@ iCAM 是 Fairchild 等人提出的一种框架，将色貌模型应用于图像�
 
 [2] I. Mehmood, M. Zhou, M. U. Khan, and M. Luo, “CIECAM16-based Tone Mapping of High Dynamic Range Images,” Color and Imaging Conference, vol. 31, pp. 102–107, Nov. 2023, doi: 10.2352/CIC.2023.31.1.20.
 
+## 输入和输出
+
+iCAM 接受 XYZ 图像作为输入，这里的 XYZ 指的是原始绝对三刺激值（tristimulus），未进行色适应（chromatic adaptation）或归一化（normalization）。这些值可以通过相机和对应的颜色校正矩阵（CCM）获取，或通过图像的逆处理获得。
+
+iCAM 的输出图像与输入图像具有相同的尺寸。但输出的 XYZ 值经过压缩处理，可转换为 sRGB 或其他颜色空间，最终在显示器上显示。
+
+## 问题
+
+在原始 iCAM06 代码中发现以下问题：
+
+- 修改后的 CAT02 中 D 参数被错误乘以 0.3。对适应场（adaptation field）与三刺激值在对角矩阵中的关系处理不当（因归一化错误）会导致色适应后图像亮度发生变化。
+- CAT02 中 D 的计算公式不正确。应为$-(L_A+42)$，而非$-(L_A-42)$。
+
 ## 文件
 
 目前，正在改进项目整体的文件结构，以实现模块化和更好的可读性。
