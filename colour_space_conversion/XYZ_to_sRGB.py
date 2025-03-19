@@ -2,7 +2,7 @@ import numpy as np
 
 
 def XYZ_to_sRGB(XYZ):
-    XYZ = np.clip(XYZ / 100, 0, 1)
+    # XYZ = np.clip(XYZ / 100, 0, 1)
     M = np.array(
         [
             [3.2406, -1.5372, -0.4986],
