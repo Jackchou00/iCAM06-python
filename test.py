@@ -2,7 +2,7 @@ import numpy as np
 from spatial_process.fastbiliateral_blur import bilateral_filter, blur
 
 
-from chromatic_adaptation import img_modified_CAT02_to_D65
+from chromatic_adaptation import img_modified_CAT02_to_D65, img_CAT02_to_D65
 from colour_space_conversion import XYZ_to_IPT, IPT_to_XYZ, XYZ_to_P3_RGB, XYZ_to_sRGB
 from tone_compression.TC import img_TC
 from colour_space_conversion.IPT_adjust import IPT_adjust
@@ -68,10 +68,12 @@ def main():
     output_folder = create_folder_with_current_time()
     output_path = os.path.join(output_folder, "output.jpg")
     DETAIL = False
+    index = 1
 
     # Input of the iCAM06 model: XYZ, absolute color space
-    XYZ = np.load("example/hdr2_float64.npy").astype(np.float32)
-    save_image_temp(XYZ, os.path.join(output_folder, "input.jpg"))
+    XYZ = np.load("example/hdr_float64.npy").astype(np.float32)
+    save_image_temp(XYZ, os.path.join(output_folder, f"{index:02d}_input.jpg"))
+    index += 1
 
     # Image decomposition
     if DETAIL:
@@ -79,27 +81,34 @@ def main():
     else:
         base_layer = XYZ
         detail_layer = np.zeros_like(XYZ)
-    save_image_temp(base_layer, os.path.join(output_folder, "base_layer.jpg"))
-    save_image_temp(detail_layer, os.path.join(output_folder, "detail_layer.jpg"))
+    save_image_temp(base_layer, os.path.join(output_folder, f"{index:02d}_base_layer.jpg"))
+    index += 1
+    save_image_temp(detail_layer, os.path.join(output_folder, f"{index:02d}_detail_layer.jpg"))
+    index += 1
 
     # Chromatic adaptation
     white = blur(XYZ, 2)
-    XYZ_adapt = img_modified_CAT02_to_D65(base_layer, white, surround="average")
-    save_image_temp(white, os.path.join(output_folder, "white_CAT.jpg"))
-    save_image_temp(XYZ_adapt, os.path.join(output_folder, "XYZ_adapt.jpg"))
+    XYZ_adapt = img_CAT02_to_D65(base_layer, white, surround="average")
+    save_image_temp(white, os.path.join(output_folder, f"{index:02d}_white_CAT.jpg"))
+    index += 1
+    save_image_temp(XYZ_adapt, os.path.join(output_folder, f"{index:02d}_XYZ_adapt.jpg"))
+    index += 1
 
     # Tone compression
     white = blur(XYZ, 3)
     XYZ_tc = img_TC(XYZ_adapt, white, 0.7)
-    save_image_temp(white, os.path.join(output_folder, "white_TC.jpg"))
-    save_image_temp(XYZ_tc, os.path.join(output_folder, "XYZ_tc.jpg"))
+    save_image_temp(white, os.path.join(output_folder, f"{index:02d}_white_TC.jpg"))
+    index += 1
+    save_image_temp(XYZ_tc, os.path.join(output_folder, f"{index:02d}_XYZ_tc.jpg"))
+    index += 1
 
     # Image attribute adjustments
     if DETAIL:
         XYZ_d = XYZ_tc * LocalContrast(detail_layer, base_layer)
     else:
         XYZ_d = XYZ_tc
-    save_image_temp(XYZ_d, os.path.join(output_folder, "XYZ_d.jpg"))
+    save_image_temp(XYZ_d, os.path.join(output_folder, f"{index:02d}_XYZ_d.jpg"))
+    index += 1
     IPT = XYZ_to_IPT(XYZ_d)
     IPT_adjusted = IPT_adjust(IPT, XYZ_d)
     XYZ_p = IPT_to_XYZ(IPT_adjusted)

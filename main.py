@@ -2,7 +2,7 @@ import numpy as np
 from spatial_process.fastbiliateral_blur import bilateral_filter, blur
 
 
-from chromatic_adaptation import img_modified_CAT02_to_D65
+from chromatic_adaptation import img_modified_CAT02_to_D65, img_CAT02_to_D65
 from colour_space_conversion import XYZ_to_IPT, IPT_to_XYZ, XYZ_to_P3_RGB
 from tone_compression.TC import img_TC
 from colour_space_conversion.IPT_adjust import IPT_adjust
@@ -33,7 +33,7 @@ def main():
 
     # Chromatic adaptation
     white = blur(XYZ, 2)
-    XYZ_adapt = img_modified_CAT02_to_D65(base_layer, white, surround="average")
+    XYZ_adapt = img_CAT02_to_D65(base_layer, white, surround="average")
 
     # Tone compression
     white = blur(XYZ, 3)
