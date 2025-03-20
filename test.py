@@ -71,7 +71,7 @@ def main():
     index = 1
 
     # Input of the iCAM06 model: XYZ, absolute color space
-    XYZ = np.load("example/hdr_float64.npy").astype(np.float32)
+    XYZ = np.load("example/xyz.npy").astype(np.float32)
     save_image_temp(XYZ, os.path.join(output_folder, f"{index:02d}_input.jpg"))
     index += 1
 
