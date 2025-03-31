@@ -60,6 +60,38 @@ def RGB_to_XYZ(
     return XYZ
 
 
+def XYZ_to_RGB(
+    XYZ,
+    space: ColorSpaceInput = "srgb",
+    transfer_function: Union[TransferFunctionType, TransferFunctionParams] = "srgb",
+):
+    """
+    Converts XYZ values to RGB values.
+
+    Args:
+        XYZ: Array of XYZ values
+        space: Color space name or custom primaries dictionary. Options include:
+               - "srgb" (default): sRGB color space
+               - "display-p3": Display P3 color space
+               - "dci-p3-63": DCI-P3 (Theatrical) color space
+               - "bt2020": BT.2020 color space
+               - Custom dictionary with red, green, blue, and white point coordinates
+        transfer_function: Transfer function type or parameters dictionary
+
+    Returns:
+        np.ndarray: Converted RGB values
+    """
+    # Generate the color conversion matrix
+    ccm = generate_ccm(space)
+    # Calculate inverse CCM to go from XYZ to linear RGB
+    inv_ccm = np.linalg.inv(ccm)
+    # Convert to linear RGB
+    linear_RGB = XYZ @ inv_ccm.T
+    # Apply OETF to get display-referred RGB
+    RGB = oetf(linear_RGB, transfer_function)
+    return RGB
+
+
 def eotf(
     RGB: np.ndarray, tf_params: Union[TransferFunctionType, TransferFunctionParams]
 ) -> np.ndarray:
@@ -211,6 +243,10 @@ def main():
     xyz = RGB_to_XYZ(rgb, space=custom_space, transfer_function="srgb")
     print("RGB:", rgb)
     print("XYZ:", xyz)
+    
+    # Example of round-trip conversion
+    rgb_back = XYZ_to_RGB(xyz, space=custom_space, transfer_function="srgb")
+    print("RGB (round-trip):", rgb_back)
 
 
 if __name__ == "__main__":
